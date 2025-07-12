@@ -4,12 +4,15 @@
  */
 package controller;
 
+import dao.UserDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import model.User;
 
 /**
  *
@@ -22,20 +25,23 @@ public class LoginServlet extends HttpServlet {
         String username = req.getParameter("username");
         String password = req.getParameter("password");
         
-        User user = UserDAO.authenticate(username, password);
+        User user = (User) UserDAO.authenticate(username, password);
         
         if (user != null) 
         {
-            req.getSession().setAttribute("user", user);
-            res.sendRedirect("home.jsp");
+            HttpSession session = req.getSession();
+            session.setAttribute("user", user);
+            resp.getWriter().println(user.getDisplayname() + "Logged sucessfully!");
         } else {
-            req.setAttribute("error", "Login failed!");
-            req.getRequestDispatcher("login.jsp").forward(req, resp);
+            HttpSession session = req.getSession();
+            session.setAttribute("user", null);
+            resp.getWriter().println("Login failed!");
         }
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.getRequestDispatcher("login.jsp").forward(req, resp);
     }
 
    
