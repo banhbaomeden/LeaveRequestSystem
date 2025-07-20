@@ -1,25 +1,27 @@
 package model;
 
-public class Role {
-    private int id;
+import java.util.ArrayList;
+import model.User;
+import model.IModel;
+
+/**
+ *
+ * @author p14s
+ */
+public class Role implements IModel {
+    
     private String name;
+    private ArrayList<User> accounts = new ArrayList<>();
+    private ArrayList<Feature> features = new ArrayList<>();
 
-    public Role() {}
-
-    public Role(int id, String name) {
-        this.id = id;
-        this.name = name;
+    public ArrayList<Feature> getFeatures() {
+        return features;
     }
 
-    // Getter & Setter
-    public int getId() {
-        return id;
+    public void setFeatures(ArrayList<Feature> features) {
+        this.features = features;
     }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
+    
     public String getName() {
         return name;
     }
@@ -27,4 +29,24 @@ public class Role {
     public void setName(String name) {
         this.name = name;
     }
+
+    public ArrayList<User> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(ArrayList<User> accounts) {
+        this.accounts = accounts;
+    }
+
+    @Override
+    public int getId() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void setId(int id) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+    
 }
+
