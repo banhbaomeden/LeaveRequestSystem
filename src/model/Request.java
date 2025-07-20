@@ -2,81 +2,55 @@ package model;
 
 import java.sql.Date;
 
-public class Request {
+public class Request implements IModel {
     private int id;
-    private User user;
-    private Date fromDate;
-    private Date toDate;
+    private int userId;
+    private Date from;
+    private Date to;
     private String reason;
-    private LeaveStatus status;
+    private String status;
 
-    public Request() {}
-
-    // Constructor khi tạo mới đơn
-    public Request(User user, Date fromDate, Date toDate, String reason) {
-        this.user = user;
-        this.fromDate = fromDate;
-        this.toDate = toDate;
-        this.reason = reason;
-        this.status = LeaveStatus.PENDING;
-    }
-
-    // Constructor đầy đủ
-    public Request(int id, User user, Date fromDate, Date toDate, String reason, LeaveStatus status) {
-        this.id = id;
-        this.user = user;
-        this.fromDate = fromDate;
-        this.toDate = toDate;
-        this.reason = reason;
-        this.status = status;
-    }
-
-    // Getter & Setter
+    @Override
     public int getId() {
         return id;
     }
-
+    @Override
     public void setId(int id) {
         this.id = id;
     }
 
-    public User getUser() {
-        return user;
+    public int getUserId() {
+        return userId;
+    }
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public Date getFrom() {
+        return from;
+    }
+    public void setFrom(Date from) {
+        this.from = from;
     }
 
-    public Date getFromDate() {
-        return fromDate;
+    public Date getTo() {
+        return to;
     }
-
-    public void setFromDate(Date fromDate) {
-        this.fromDate = fromDate;
-    }
-
-    public Date getToDate() {
-        return toDate;
-    }
-
-    public void setToDate(Date toDate) {
-        this.toDate = toDate;
+    public void setTo(Date to) {
+        this.to = to;
     }
 
     public String getReason() {
         return reason;
     }
-
     public void setReason(String reason) {
         this.reason = reason;
     }
 
-    public LeaveStatus getStatus() {
+    public String getStatus() {
         return status;
     }
-
-    public void setStatus(LeaveStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 }
