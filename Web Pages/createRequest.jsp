@@ -16,9 +16,8 @@
         <<form action="createRequest" method="post">
             From: <input type="date" name="fromDate" required /><br/><!-- comment -->
             To: <input type="date" name="toDate" required /><br/><!-- comment -->
-            Reason: <textarea name="reason" required></textarea><br/><!-- comment -->
+            Reason: <input type="text" name="reason"/> <br/>
             <input type="submit" value="Send" />
         </form>
-        <p style="color:green">${successMessage}</p>
     </body>
 </html>
