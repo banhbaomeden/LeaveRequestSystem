@@ -1,101 +1,129 @@
 package dao;
 
 import model.Request;
-import model.User;
-import model.LeaveStatus;
-
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class RequestDAO {
-    public void save(Request r) {
-        String sql = "INSERT INTO requests (user_id, from_date, to_date, reason, status) VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+/**
+ * DAO thao tác bảng requests.
+ */
+public class RequestDAO extends DBConnection<Request> {
 
-            ps.setInt(1, r.getUser().getId());
-            ps.setDate(2, r.getFromDate());
-            ps.setDate(3, r.getToDate());
-            ps.setString(4, r.getReason());
-            ps.setString(5, r.getStatus().name());
-            ps.executeUpdate();
+    private static final Logger LOGGER = Logger.getLogger(RequestDAO.class.getName());
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    /* ===== Helper map row ===== */
+    private Request mapRow(ResultSet rs) throws SQLException {
+        Request r = new Request();
+        r.setId(rs.getInt("id"));
+        r.setUserId(rs.getInt("user_id"));
+        r.setFrom(rs.getDate("from_date"));
+        r.setTo(rs.getDate("to_date"));
+        r.setReason(rs.getString("reason"));
+        r.setStatus(rs.getString("status"));
+        return r;
     }
 
-    public List<Request> getByUser(int userId) {
-        List<Request> list = new ArrayList<>();
-        String sql = "SELECT * FROM requests WHERE user_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    /* ===== Lấy các request của 1 user ===== */
+    public ArrayList<Request> getByUserId(int userId) {
+        ArrayList<Request> list = new ArrayList<>();
+        String sql = "SELECT id,user_id,from_date,to_date,reason,status FROM requests WHERE user_id=?";
+        try (Connection con = ensureConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, userId);
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                Request r = new Request(
-                    rs.getInt("id"),
-                    new User(userId), // chỉ có id, chưa truy vấn đủ info
-                    rs.getDate("from_date"),
-                    rs.getDate("to_date"),
-                    rs.getString("reason"),
-                    LeaveStatus.valueOf(rs.getString("status"))
-                );
-                list.add(r);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "getByUserId error", e);
         }
         return list;
     }
 
-    public List<Request> getPending() {
-        return getByStatus("PENDING");
-    }
+    /* ===== IMPLEMENT abstract methods từ DBConnection ===== */
 
-    public List<Request> getApprovedRequests() {
-        return getByStatus("APPROVED");
-    }
-
-    private List<Request> getByStatus(String status) {
-        List<Request> list = new ArrayList<>();
-        String sql = "SELECT r.*, u.username FROM requests r JOIN users u ON r.user_id = u.id WHERE r.status = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, status);
-            ResultSet rs = ps.executeQuery();
+    @Override
+    public ArrayList<Request> list() {
+        ArrayList<Request> list = new ArrayList<>();
+        String sql = "SELECT id,user_id,from_date,to_date,reason,status FROM requests";
+        try (Connection con = ensureConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                User u = new User(rs.getInt("user_id"), rs.getString("username"), null, null, null);
-                Request r = new Request(
-                    rs.getInt("id"),
-                    u,
-                    rs.getDate("from_date"),
-                    rs.getDate("to_date"),
-                    rs.getString("reason"),
-                    LeaveStatus.valueOf(rs.getString("status"))
-                );
-                list.add(r);
+                list.add(mapRow(rs));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "list error", e);
         }
         return list;
     }
 
-    public void updateStatus(int id, String newStatus) {
-        String sql = "UPDATE requests SET status = ? WHERE id = ?";
-        try (Connection conn = (Connection) DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    @Override
+    public Request get(int id) {
+        Request r = null;
+        String sql = "SELECT id,user_id,from_date,to_date,reason,status FROM requests WHERE id=?";
+        try (Connection con = ensureConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, newStatus);
-            ps.setInt(2, id);
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) r = mapRow(rs);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "get error", e);
+        }
+        return r;
+    }
+
+    @Override
+    public void insert(Request r) {
+        String sql = "INSERT INTO requests(user_id,from_date,to_date,reason,status) VALUES(?,?,?,?,?)";
+        try (Connection con = ensureConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, r.getUserId());
+            ps.setDate(2, r.getFrom());
+            ps.setDate(3, r.getTo());
+            ps.setString(4, r.getReason());
+            ps.setString(5, r.getStatus());
             ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "insert error", e);
+        }
+    }
+
+    @Override
+    public void update(Request r) {
+        String sql = "UPDATE requests SET from_date=?,to_date=?,reason=?,status=? WHERE id=?";
+        try (Connection con = ensureConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setDate(1, r.getFrom());
+            ps.setDate(2, r.getTo());
+            ps.setString(3, r.getReason());
+            ps.setString(4, r.getStatus());
+            ps.setInt(5, r.getId());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "update error", e);
+        }
+    }
+
+    @Override
+    public void delete(Request r) {
+        String sql = "DELETE FROM requests WHERE id=?";
+        try (Connection con = ensureConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, r.getId());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "delete error", e);
         }
     }
 }
