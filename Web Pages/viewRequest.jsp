@@ -7,7 +7,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.util.List, model.Request" %>
 <%
-    List<Request> requestList = (List<Request>) request.getAttribute("requests");
+    List<Request> requestList = (List<Request>) request.getAttribute("requestList");
 %>
 <html>
 <head>
@@ -20,13 +20,21 @@
             <th>Từ ngày</th><th>Đến ngày</th><th>Lý do</th><th>Trạng thái</th>
         </tr>
         <%
-            for (Request r : requestList) {
+            if (requestList != null && !requestList.isEmpty()) {
+                for (Request r : requestList) {
         %>
             <tr>
-                <td><%= r.getFromDate() %></td>
-                <td><%= r.getToDate() %></td>
+                <td><%= r.getFrom() %></td>
+                <td><%= r.getTo() %></td>
                 <td><%= r.getReason() %></td>
                 <td><%= r.getStatus() %></td>
+            </tr>
+        <%
+                }
+            } else {
+        %>
+            <tr>
+                <td colspan="4">Không có đơn nghỉ nào để hiển thị.</td>
             </tr>
         <%
             }
@@ -34,4 +42,3 @@
     </table>
 </body>
 </html>
-
